@@ -49,6 +49,7 @@ make cpp_logger           # compile one
 make run P=cpp_logger     # compile and run it
 make run P=x IN=file      # ...feeding a file to stdin
 make list
+make test                 # build and run the tests
 make clean
 ```
 
@@ -60,5 +61,33 @@ For quick throwaway experiments without a checkout:
 [onlinegdb](https://www.onlinegdb.com/online_c++_compiler).
 
 ## Pointers and references
+
+`pointers_and_references.cpp` walks through the example in the diagram below,
+and `tests/test_pointers_and_references.cpp` asserts the behaviour it claims.
+The mechanics live in `pointers_and_references.hpp` so the demo and the test
+exercise the same code.
+
+The question the diagram answers is what `&` means in front of a pointer. It
+has two unrelated jobs: in an expression `&x` is address-of, and in a
+declaration `int &r = x` introduces a reference. Applied to an `int*`, address-of
+yields an `int**`.
+
+That matters for exactly one reason. A function taking `int*` by value gets a
+copy, so reassigning it cannot move the caller's pointer:
+
+```cpp
+void retarget_by_value(int *p, int *to) { p = to; }   // caller sees nothing
+void retarget_via_pointer_to_pointer(int **pp, int *to) { *pp = to; }
+void retarget_via_reference_to_pointer(int *&pr, int *to) { pr = to; }
+```
+
+The last two work because both are handed the pointer itself rather than a copy:
+one as its address, one as an alias. A reference additionally cannot be null,
+cannot be reseated after binding, and has no arithmetic.
+
+```shell
+make run P=pointers_and_references
+make test
+```
 
 ![Pointers and references](good_way_to_understand_pointer_and_references.png)
